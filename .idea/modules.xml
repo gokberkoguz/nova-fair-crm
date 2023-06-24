@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../Django-CRM/.idea/Django-CRM.iml" filepath="$PROJECT_DIR$/../Django-CRM/.idea/Django-CRM.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/nova-fair-crm.iml" filepath="$PROJECT_DIR$/.idea/nova-fair-crm.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../nova_expo/.idea/nova_expo.iml" filepath="$PROJECT_DIR$/../nova_expo/.idea/nova_expo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../novaa/.idea/novaa.iml" filepath="$PROJECT_DIR$/../novaa/.idea/novaa.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../react-crm/.idea/react-crm.iml" filepath="$PROJECT_DIR$/../react-crm/.idea/react-crm.iml" />
+    </modules>
+  </component>
+</project>
