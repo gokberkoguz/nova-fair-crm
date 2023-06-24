@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, Route, Routes, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate } from 'react-router-dom';
 import { useTable, useSortBy, useGlobalFilter } from 'react-table';
 import CustomerProfilePage from './CustomerProfilePage';
-import { fetchCustomers } from '../api';
+import CustomerCreationForm from './CustomerCreationForm';
+import { fetchCustomers, updateCustomer, createCustomer } from '../api';
 
 const CustomerComponent = () => {
   const [customers, setCustomers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,7 +37,29 @@ const CustomerComponent = () => {
       },
       {
         Header: 'Assigned Employee',
-        accessor: 'assigned_employee.username',
+        accessor: 'assigned_employee',
+        Cell: ({ row }) => {
+          const { original } = row;
+          const assignToMe = async () => {
+            try {
+              const updatedValues = {
+                assigned_employee: localStorage.getItem('username'),
+              };
+              await updateCustomer(original, updatedValues);
+              const updatedData = await fetchCustomers();
+              setCustomers(updatedData);
+            } catch (error) {
+              console.error('Error:', error);
+              // Handle error, e.g., show an error message, handle different error cases, etc.
+            }
+          };
+
+          return original.assigned_employee ? (
+            original.assigned_employee
+          ) : (
+            <button onClick={assignToMe}>Assign to Me</button>
+          );
+        },
       },
     ],
     []
@@ -53,6 +77,21 @@ const CustomerComponent = () => {
 
   const { globalFilter } = state;
 
+  const createNewCustomer = async (customerData) => {
+    try {
+      // Create customer on the backend
+      await createCustomer(customerData);
+      // Fetch the updated customer data
+      const updatedData = await fetchCustomers();
+      setCustomers(updatedData);
+      // Redirect back to the customer list page
+      navigate('/customers');
+    } catch (error) {
+      console.error('Error:', error);
+      // Handle error, e.g., show an error message, handle different error cases, etc.
+    }
+  };
+
   return (
     <div>
       <h1>Customers</h1>
@@ -64,7 +103,15 @@ const CustomerComponent = () => {
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
       </div>
-      <table {...getTableProps()} className="table table-striped table-hover">
+      <button onClick={() => navigate('/add_customer/')}>Add Customer</button>
+      <Routes>
+        <Route
+          path="/add_customer/"
+          element={<CustomerCreationForm onCreateCustomer={createNewCustomer} />}
+        />
+        <Route path="/customers/:id" element={<CustomerProfilePage />} />
+      </Routes>
+      <table {...getTableProps()} style={{ marginTop: '1rem' }}>
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -92,10 +139,6 @@ const CustomerComponent = () => {
           })}
         </tbody>
       </table>
-
-      <Routes>
-        <Route path="/customers/:customerId" element={<CustomerProfilePage customers={customers} />} />
-      </Routes>
     </div>
   );
 };

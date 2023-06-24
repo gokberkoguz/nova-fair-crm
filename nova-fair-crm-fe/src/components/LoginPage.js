@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SigninPage from "./SigninPage.tsx";
 import TitleBox from "./TitleBox.tsx";
 import MainLayout from "../layouts/MainLayout.tsx";
@@ -7,10 +7,20 @@ import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { authenticate } from '../api'; // Import your authentication API function
 import { useNavigate } from 'react-router-dom';
 
+
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if the user is already authenticated
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Redirect to the homepage
+      navigate('/');
+    }
+  }, []);
 
   const handleLogin = (username, password) => {
     console.log("username")

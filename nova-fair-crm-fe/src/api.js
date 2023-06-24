@@ -81,7 +81,14 @@ export const authenticate = async (username, password) => {
 
     if (response.ok) {
       const data = await response.json();
-      return data; // Return the response data after successful login
+        const token = data.token;
+
+        // Store the token in local storage
+        localStorage.setItem('token', token);
+        localStorage.setItem('username', username);
+
+        // Redirect to the desired page
+        window.location.href = '/homepage';
     } else {
       throw new Error('Login failed');
     }

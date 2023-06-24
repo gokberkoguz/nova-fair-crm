@@ -85,7 +85,7 @@ const CustomerProfilePage = () => {
               onChange={handleInputChange}
             />
           ) : (
-            <span>{assigned_employee.username || 'N/A'}</span>
+            <span>{assigned_employee || 'N/A'}</span>
           )}
         </div>
       )}
