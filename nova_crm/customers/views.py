@@ -47,10 +47,16 @@ class CustomerViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        print(request.data)
+        for k, v in request.data.items():
+            print(k,v)
+            if v == '':
+                request.data[k] = None
         serializer = CustomerSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
+        print(serializer.errors)
         return Response(serializer.errors, status=400)
 
 
