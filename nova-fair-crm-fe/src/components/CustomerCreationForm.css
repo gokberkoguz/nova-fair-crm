@@ -1,0 +1,12 @@
+/* CustomerCreationForm.css */
+
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.form-group label {
+  width: 120px; /* Adjust this width to your preference */
+  margin-right: 10px;
+}

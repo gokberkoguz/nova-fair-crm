@@ -4,7 +4,7 @@ import TitleBox from "./TitleBox.tsx";
 import MainLayout from "../layouts/MainLayout.tsx";
 import { Box, Button, Checkbox, colors, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
-import { authenticate } from '../api'; // Import your authentication API function
+import { authenticate } from '../api/api.js'; // Import your authentication API function
 import { useNavigate } from 'react-router-dom';
 
 

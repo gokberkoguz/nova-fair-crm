@@ -29,10 +29,10 @@ const TitleBox: React.FC = () => {
           alignItems="flex-start"
         >
           <Typography variant="h4" fontWeight="bold" color="whitesmoke" mb={3}>
-            Join Our <br /> Community
+            Welcome to Super Nova
           </Typography>
           <Typography variant="body1" fontWeight="" color="whitesmoke">
-            Create Your High-Level Cloud Network Service!
+
           </Typography>
         </Box>
       </Box>

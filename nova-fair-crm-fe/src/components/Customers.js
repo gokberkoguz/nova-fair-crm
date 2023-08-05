@@ -1,146 +1,153 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
-import { useTable, useSortBy, useGlobalFilter } from 'react-table';
-import CustomerProfilePage from './CustomerProfilePage';
-import CustomerCreationForm from './CustomerCreationForm';
-import { fetchCustomers, updateCustomer, createCustomer } from '../api';
+import * as React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import Link from '@mui/material/Link';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Title from './Title';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AddIcon from '@mui/icons-material/Add';
+import { fetchCustomers, updateCustomer, createCustomer } from '../api/api.js';
 
-const CustomerComponent = () => {
-  const [customers, setCustomers] = useState([]);
-  const navigate = useNavigate();
+// Generate Order Data
+function createData(id, date, name, shipTo, paymentMethod, amount) {
+  return { id, date, name, shipTo, paymentMethod, amount };
+}
 
-  useEffect(() => {
+export default function Customers() {
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [rows, setRows] = React.useState([]);
+  const [filteredRows, setFilteredRows] = React.useState([]);
+  const [username, setUsername] = React.useState('');
+
+  React.useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchCustomers();
-      setCustomers(data);
+      const dataRows = await fetchCustomers();
+      console.log(dataRows)
+      setRows(dataRows);
+      setFilteredRows(dataRows);
     };
 
     fetchData();
   }, []);
 
-  const columns = useMemo(
-    () => [
-      {
-        Header: 'ID',
-        accessor: 'id',
-      },
-      {
-        Header: 'Name',
-        accessor: 'name',
-        Cell: ({ row }) => (
-          <Link to={`/customers/${row.original.id}`}>{row.original.name}</Link>
-        ),
-      },
-      {
-        Header: 'Sector',
-        accessor: 'sector',
-      },
-      {
-        Header: 'Assigned Employee',
-        accessor: 'assigned_employee',
-        Cell: ({ row }) => {
-          const { original } = row;
-          const assignToMe = async () => {
-            try {
-              const updatedValues = {
-                assigned_employee: localStorage.getItem('username'),
-              };
-              await updateCustomer(original, updatedValues);
-              const updatedData = await fetchCustomers();
-              setCustomers(updatedData);
-            } catch (error) {
-              console.error('Error:', error);
-              // Handle error, e.g., show an error message, handle different error cases, etc.
-            }
-          };
+  React.useEffect(() => {
+    const usernameFromCookie = localStorage.getItem('username');
+    setUsername(usernameFromCookie);
+  }, []);
 
-          return original.assigned_employee ? (
-            original.assigned_employee
-          ) : (
-            <button onClick={assignToMe}>Assign to Me</button>
-          );
-        },
-      },
-    ],
-    []
-  );
+  const handleSearchQueryChange = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    state,
-    setGlobalFilter,
-  } = useTable({ columns, data: customers }, useGlobalFilter, useSortBy);
+    const filtered = rows.filter((row) =>
+      Object.values(row).some(
+        (value) =>
+          typeof value === 'string' && value.toLowerCase().includes(query)
+      )
+    );
+    setFilteredRows(filtered);
+  };
 
-  const { globalFilter } = state;
+  const handleAssignToMe = (customer) => {
+    // Send POST request to assign the customer to the current username
+    // Here, you can make use of your API functions like updateCustomer
+    // Assuming you have an updateCustomer function in your 'api' file:
+    const updatedCustomer = { ...customer, assigned_employee: username };
+    updateCustomer(customer, { assigned_employee: username })
+      .then((response) => {
+        const updatedRows = filteredRows.map((row) =>
+          row.id === customer.id ? { ...row, assigned_employee: username } : row
+        );
+        setFilteredRows(updatedRows);
+        console.log('Customer assigned successfully:', response);
+      })
+      .catch((error) => {
+        // Handle error
+        console.error('Error assigning customer:', error);
+      });
+  };
 
-  const createNewCustomer = async (customerData) => {
-    try {
-      // Create customer on the backend
-      await createCustomer(customerData);
-      // Fetch the updated customer data
-      const updatedData = await fetchCustomers();
-      setCustomers(updatedData);
-      // Redirect back to the customer list page
-      navigate('/customers');
-    } catch (error) {
-      console.error('Error:', error);
-      // Handle error, e.g., show an error message, handle different error cases, etc.
-    }
+  const preventDefault = (event) => {
+    event.preventDefault();
   };
 
   return (
-    <div>
-      <h1>Customers</h1>
-      <div>
-        Search:{' '}
-        <input
-          type="text"
-          value={globalFilter || ''}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-        />
+    <React.Fragment>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Title>Customers</Title>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ marginRight: '10px' }}>
+            <label htmlFor="search"></label>
+            <input
+              id="search"
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchQueryChange}
+            />
+          </div>
+          <div>
+            <Link component={RouterLink} to="/AddCustomers" color="inherit">
+              <AddIcon />
+            </Link>
+          </div>
+        </div>
       </div>
-      <button onClick={() => navigate('/add_customer/')}>Add Customer</button>
-      <Routes>
-        <Route
-          path="/add_customer/"
-          element={<CustomerCreationForm onCreateCustomer={createNewCustomer} />}
-        />
-        <Route path="/customers/:id" element={<CustomerProfilePage />} />
-      </Routes>
-      <table {...getTableProps()} style={{ marginTop: '1rem' }}>
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                  {column.render('Header')}
-                  <span>
-                    {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
-                  </span>
-                </th>
-              ))}
-            </tr>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Name</TableCell>
+            <TableCell>Phone</TableCell>
+            <TableCell>Mail</TableCell>
+            <TableCell>Sector</TableCell>
+            <TableCell>City</TableCell>
+            <TableCell>Contact Name</TableCell>
+            <TableCell>Contact Mail</TableCell>
+            <TableCell>Contact Phone</TableCell>
+            <TableCell>Assigned To</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {filteredRows.map((row) => (
+            <TableRow key={row.id}>
+              <TableCell>{row.name}</TableCell>
+              <TableCell>{row.phone}</TableCell>
+              <TableCell>{row.mail}</TableCell>
+              <TableCell>{row.sector}</TableCell>
+              <TableCell>{row.city}</TableCell>
+              <TableCell>{row.contact_name}</TableCell>
+              <TableCell>{row.contact_email}</TableCell>
+              <TableCell>{row.contact_phone}</TableCell>
+              <TableCell>
+                {row.assigned_employee ? (
+                  row.assigned_employee
+                ) : (
+                  <Link
+                    component="button"
+                    onClick={() => handleAssignToMe(row)}
+                    variant="body2"
+                  >
+                    Assign to me
+                  </Link>
+                )}
+              </TableCell>
+              <TableCell>
+                <Link component={RouterLink} to={`/ProfileCustomer/${row.id}`}>
+                  <DashboardIcon />
+                </Link>
+              </TableCell>
+            </TableRow>
           ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => (
-                  <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </React.Fragment>
   );
-};
-
-export default CustomerComponent;
+}

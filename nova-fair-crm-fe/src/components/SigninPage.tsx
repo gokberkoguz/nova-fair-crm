@@ -23,7 +23,7 @@ const SigninPage = ({ handleLogin }) => {
     <Box>
       <Box>
         <Typography variant="h4" fontWeight="bold" color="whitesmoke" mb={3}>
-          Sign in to dashboard
+
         </Typography>
       </Box>
 
